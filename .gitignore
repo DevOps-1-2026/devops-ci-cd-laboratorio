@@ -9,3 +9,10 @@ venv/
 *.sqlite3
 *.log
 .DS_Store
+*.pyc
+.venv/
+venv/
+.env
+.env.*
+.vscode/
+.idea/
