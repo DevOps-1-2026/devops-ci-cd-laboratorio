@@ -1,4 +1,4 @@
-name: CI - Python FastAPI
+name: CI-CD - Python FastAPI
 
 on:
   push:
@@ -9,10 +9,17 @@ on:
     branches:
       - develop
 
+  workflow_dispatch:
+
 permissions:
   contents: read
+  id-token: write
 
 jobs:
+
+  # ==========================================
+  # CI - Build and Test
+  # ==========================================
   test:
     name: Build and Test
     runs-on: ubuntu-latest
@@ -35,4 +42,37 @@ jobs:
 
       - name: Ejecutar pruebas
         run: |
-          python -m pytest -v
+          pytest -v
+
+
+  # ==========================================
+  # CD - Deploy to Azure Container Apps
+  # ==========================================
+  deploy:
+    name: Build and Deploy
+    needs: test
+
+    if: ${{ needs.test.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/develop' }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.APPCICDFUNDEV_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.APPCICDFUNDEV_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.APPCICDFUNDEV_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and deploy Container App
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          acrName: acrfundev
+          containerAppName: app-cicdfundev
+          resourceGroup: rg-cicddevopsfun
+          imageToBuild: acrfundev.azurecr.io/app-cicdfundev:${{ github.sha }}
