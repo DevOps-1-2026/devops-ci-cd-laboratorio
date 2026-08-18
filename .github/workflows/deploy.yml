@@ -1,7 +1,11 @@
 name: CD - Deploy FastAPI to Azure Container Apps
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - "CI - Python FastAPI"
+    types:
+      - completed
     branches:
       - develop
 
@@ -14,12 +18,15 @@ permissions:
 jobs:
   deploy:
     name: Build and Deploy
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
 
       - name: Checkout código
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Azure Login
         uses: azure/login@v2
@@ -35,4 +42,4 @@ jobs:
           acrName: acrfundev
           containerAppName: app-cicdfundev
           resourceGroup: rg-cicddevopsfun
-          imageToBuild: acrfundev.azurecr.io/app-cicdfundev:${{ github.sha }}
+          imageToBuild: acrfundev.azurecr.io/app-cicdfundev:${{ github.event.workflow_run.head_sha || github.sha }}
