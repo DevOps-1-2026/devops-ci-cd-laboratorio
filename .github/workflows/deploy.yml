@@ -1,1 +1,48 @@
 
+name: CD - Azure Container Apps
+
+on:
+  workflow_run:
+    workflows:
+      - "CI - Python FastAPI"
+    types:
+      - completed
+    branches:
+      - develop
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout código
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.APPCICDFUNDEV_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.APPCICDFUNDEV_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.APPCICDFUNDEV_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and deploy Container App
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }}
+          dockerfilePath: Dockerfile
+          acrName: acrfundev
+          containerAppName: app-cicdfundev
+          resourceGroup: rg-cicddevopsfun
+          imageToBuild: acrfundev.azurecr.io/app-cicdfundev:${{ github.event.workflow_run.head_sha }}
+          registryUrl: acrfundev.azurecr.io
+          registryUsername: ${{ secrets.APPCICDFUNDEV_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.APPCICDFUNDEV_REGISTRY_PASSWORD }}
