@@ -89,6 +89,9 @@ Todos los recursos se encuentran aprovisionados en la región **Brazil South** b
 
 ## 4. Pipeline de Automatización CI/CD
 
+> [!NOTE]
+> La orquestación del flujo CI/CD se implementó enteramente mediante **GitHub Actions** (`.github/workflows/ci.yml`) utilizando infraestructura de runners y despliegue a Azure, en lugar de un archivo `Jenkinsfile`.
+
 El flujo está definido en el archivo `.github/workflows/ci.yml` y consta de dos trabajos (*jobs*) principales:
 
 ### Job 1: `test` (Build and Test - CI)
