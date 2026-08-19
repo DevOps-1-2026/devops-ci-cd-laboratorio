@@ -24,7 +24,8 @@
 4. [Pipeline de Automatización CI/CD](#4-pipeline-de-automatización-cicd)
 5. [Configuración de Secretos y Seguridad](#5-configuración-de-secretos-y-seguridad)
 6. [Validación Funcional y Pruebas](#6-validación-funcional-y-pruebas)
-7. [Autores](#7-autores)
+7. [Pruebas Directas en Producción](#7-pruebas-directas-en-producción)
+8. [Autores](#8-autores)
 
 ---
 
@@ -150,7 +151,16 @@ Para validar el funcionamiento del pipeline en el repositorio:
 
 ---
 
-## 7. Autores
+## 7. Pruebas Directas en Producción
+
+Se ha creado un conjunto completo de evidencias y peticiones cURL para verificar y probar los endpoints de la API desplegada directamente en *Azure Container Apps*.
+
+> **Guía completa de Pruebas de Producción:**  
+> Documentación detallada, payload de respuestas y scripts de prueba en la carpeta [`/production_test`](./production_test/README.md).
+
+---
+
+## 8. Autores
 
 - Camilo Jose Mora Rodriguez
 - Danny Tatiana Morales Jimenez
