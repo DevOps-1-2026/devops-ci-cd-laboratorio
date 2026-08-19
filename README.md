@@ -79,6 +79,12 @@ Todos los recursos se encuentran aprovisionados en la región **Brazil South** b
 🌐 **URL de Producción - Consola de Azure Container Apps:**  
 [https://app-cicdfundev.nicebush-06dcb993.brazilsouth.azurecontainerapps.io](https://app-cicdfundev.nicebush-06dcb993.brazilsouth.azurecontainerapps.io)
 
+<p align="center">
+  <img src="assets/azure-container-app.png" alt="Azure Container App Status" width="85%"/>
+  <br>
+  <i>Figura 1: Estado del recurso app-cicdfundev desplegado en Azure Container Apps.</i>
+</p>
+
 ---
 
 ## 4. Pipeline de Automatización CI/CD
@@ -99,6 +105,13 @@ El flujo está definido en el archivo `.github/workflows/ci.yml` y consta de dos
   1. **Checkout del código:** Obtiene el código fuente (`actions/checkout@v4`).
   2. **Azure Login:** Autenticación segura mediante federación de identidades OIDC (`azure/login@v2`).
   3. **Build & Deploy:** Compilación de la imagen Docker etiquetada con el SHA del commit (`${{ github.sha }}`), publicación en `acrfundev.azurecr.io` y despliegue automatizado en **Azure Container Apps** (`azure/container-apps-deploy-action@v2`).
+
+
+<p align="center">
+  <img src="assets/github-actions-success.png" alt="GitHub Actions Pipeline Execution" width="85%"/>
+  <br>
+  <i>Figura 2: Ejecución exitosa de los jobs de Test y Deploy en GitHub Actions.</i>
+</p>
 
 ---
 
@@ -125,6 +138,12 @@ Para validar el funcionamiento del pipeline en el repositorio:
    * Realizar el *merge* del PR a la rama `develop`.
    * Verificar que se desencadenen secuencialmente los jobs `test` y `deploy`.
    * Acceder a la URL pública de la aplicación para confirmar la actualización en producción.
+
+<p align="center">
+  <img src="assets/app-live-proof.png" alt="Aplicación desplegada y respondiendo en producción" width="85%"/>
+  <br>
+  <i>Figura 3: Respuesta del microservicio FastAPI corriendo en el entorno de producción en Azure.</i>
+</p>
 
 ---
 
