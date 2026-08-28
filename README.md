@@ -25,7 +25,8 @@
 5. [Configuración de Secretos y Seguridad](#5-configuración-de-secretos-y-seguridad)
 6. [Validación Funcional y Pruebas](#6-validación-funcional-y-pruebas)
 7. [Pruebas Directas en Producción](#7-pruebas-directas-en-producción)
-8. [Autores](#8-autores)
+8. [Monitoreo, Observabilidad y Pruebas de Carga (k6 & Grafana)](#8-monitoreo-observabilidad-y-pruebas-de-carga-k6--grafana)
+9. [Autores](#9-autores)
 
 ---
 
@@ -160,7 +161,21 @@ Se ha creado un conjunto completo de evidencias y peticiones cURL para verificar
 
 ---
 
-## 8. Autores
+## 8. Monitoreo, Observabilidad y Pruebas de Carga (k6 & Grafana)
+
+Se ha implementado e integrado un stack completo de observabilidad y pruebas de rendimiento automatizadas para la aplicación FastAPI desplegada en Azure Container Apps:
+
+* **Endpoints de Salud y Métricas:** Adición de `/health` y `/metrics` instrumentados con `prometheus-fastapi-instrumentator` y recolector personalizado `psutil` para CPU y Memoria.
+* **Stack Local Contenerizado:** Entorno en `docker-compose` con **Prometheus**, **Grafana** y **k6** con límites de recursos explícitos (`0.5` CPU, `512MB` RAM).
+* **Aprovisionamiento Automático en Grafana:** Carga automatizada del dashboard de control (*FastAPI Monitoring*), fuente de datos y reglas de alerta (`HighLatencyAlert` y `HighErrorRateAlert`).
+* **Pruebas de Carga (k6):** Ejecución de curva de tráfico sintética (hasta 30 usuarios virtuales) validando cumplimiento de SLOs ($p_{95}<500\text{ ms}$, $p_{99}<1000\text{ ms}$, tasa de fallos $<1\%$, disponibilidad $>99\%$).
+
+> **Guía y Evidencias Completas de Monitoreo:**  
+> Proceso detallado, arquitectura del stack y capturas de pantalla de evidencia en la carpeta [`/monitoring/docs`](./monitoring/docs/README.md).
+
+---
+
+## 9. Autores
 
 - Camilo Jose Mora Rodriguez
 - Danny Tatiana Morales Jimenez
