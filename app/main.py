@@ -1,4 +1,8 @@
+import psutil
 from fastapi import FastAPI, HTTPException
+from prometheus_client import REGISTRY
+from prometheus_client.core import GaugeMetricFamily
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from .models import (
     CreditApplication,
@@ -12,7 +16,42 @@ from .service import (
     update_credit_application_status,
 )
 
+
+class SystemMetricsCollector:
+    def collect(self):
+        process = psutil.Process()
+
+        cpu = GaugeMetricFamily(
+            "process_cpu_seconds_total",
+            "Total user and system CPU time spent in seconds.",
+        )
+        cpu.add_sample(
+            "process_cpu_seconds_total",
+            value=process.cpu_times().user + process.cpu_times().system,
+            labels={},
+        )
+        yield cpu
+
+        mem = GaugeMetricFamily(
+            "process_resident_memory_bytes",
+            "Resident memory size in bytes.",
+        )
+        mem.add_sample(
+            "process_resident_memory_bytes",
+            value=process.memory_info().rss,
+            labels={},
+        )
+        yield mem
+
+
+try:
+    REGISTRY.register(SystemMetricsCollector())
+except Exception:
+    pass
+
 app = FastAPI(title="DevOps Bank Credit Application API")
+
+Instrumentator().instrument(app).expose(app)
 
 
 @app.get("/health")
