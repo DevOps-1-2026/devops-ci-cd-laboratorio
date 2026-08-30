@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: devops-app
+  namespace: devops-app
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: devops-app
+
+  template:
+    metadata:
+      labels:
+        app: devops-app
+
+    spec:
+      imagePullSecrets:
+        - name: acr-secret
+
+      containers:
+        - name: devops-app
+          image: acrfundev.azurecr.io/app-cicdfundev:9b463191b54a02b1df88a17e0568ece1da315a77
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 2
+            failureThreshold: 3
