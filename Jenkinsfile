@@ -13,7 +13,7 @@ pipeline {
     }
 
     options {
-        timeout(time: 15, unit: 'MINUTES')
+        timeout(time: 20, unit: 'MINUTES')
         disableConcurrentBuilds()
     }
 
@@ -50,21 +50,21 @@ pipeline {
             }
         }
 
-        stage('Esperar imagen en ACR') {
+        stage('Preparar imagen desde ACR') {
             steps {
                 powershell '''
                     $ErrorActionPreference = 'Stop'
                     $maxAttempts = 30
 
                     for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
-                        & cmd.exe /c "docker manifest inspect $env:DEPLOY_IMAGE >nul 2>&1"
+                        & cmd.exe /c "docker pull $env:DEPLOY_IMAGE >nul 2>&1"
 
                         if ($LASTEXITCODE -eq 0) {
-                            Write-Host "Imagen disponible en ACR: $env:DEPLOY_IMAGE"
+                            Write-Host "Imagen descargada desde ACR: $env:DEPLOY_IMAGE"
                             exit 0
                         }
 
-                        Write-Host "Imagen aun no disponible. Intento $attempt de $maxAttempts."
+                        Write-Host "Imagen aun no disponible para descarga. Intento $attempt de $maxAttempts."
                         Start-Sleep -Seconds 10
                     }
 
@@ -111,7 +111,7 @@ pipeline {
                         }
                     }
 
-                    Invoke-KubectlCommand rollout status deployment/$env:DEPLOYMENT_NAME --namespace $env:KUBE_NAMESPACE --timeout=5m
+                    Invoke-KubectlCommand rollout status deployment/$env:DEPLOYMENT_NAME --namespace $env:KUBE_NAMESPACE --timeout=10m
                     Invoke-KubectlCommand wait deployment/$env:DEPLOYMENT_NAME --namespace $env:KUBE_NAMESPACE --for=condition=Available --timeout=60s
                     Invoke-KubectlCommand get deployment $env:DEPLOYMENT_NAME --namespace $env:KUBE_NAMESPACE
                 '''
