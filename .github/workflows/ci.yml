@@ -53,7 +53,7 @@ jobs:
 
     if: >
       github.event_name == 'push' &&
-      github.ref == 'refs/heads/main'
+      (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
 
     runs-on: ubuntu-latest
 
@@ -88,7 +88,7 @@ jobs:
   # ============================================================
   deploy:
     name: Build and Deploy
-    needs: test
+    needs: sonar
 
     if: >
       github.event_name == 'push' &&
