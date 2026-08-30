@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - develop
-
       - main
 
 permissions:
@@ -46,24 +45,17 @@ jobs:
   # ============================================================
   # SONARCLOUD
   #
-  # Solo se ejecuta:
-  # 1. Cuando hay push a main
-  # 2. Cuando hay Pull Request cuyo destino es main
-  #
-  # Esto evita intentar analizar develop como una rama
-  # independiente en el plan Free de SonarCloud.
+  # Se ejecuta únicamente cuando el código llega a main.
   # ============================================================
   sonar:
     name: Análisis SonarCloud
     needs: test
-    runs-on: ubuntu-latest
 
     if: >
-      (github.event_name == 'push' &&
-       github.ref == 'refs/heads/main')
-      ||
-      (github.event_name == 'pull_request' &&
-       github.base_ref == 'main')
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
 
     steps:
 
@@ -92,7 +84,7 @@ jobs:
   # ============================================================
   # DEPLOY AZURE CONTAINER APP
   #
-  # Solo se ejecuta cuando hay PUSH directo a develop.
+  # Solo se ejecuta cuando hay PUSH a develop.
   # ============================================================
   deploy:
     name: Build and Deploy
