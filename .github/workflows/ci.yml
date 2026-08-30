@@ -23,6 +23,8 @@ jobs:
 
       - name: Checkout código
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar Python
         uses: actions/setup-python@v5
@@ -38,6 +40,11 @@ jobs:
       - name: Ejecutar pruebas
         run: |
           PYTHONPATH=. pytest -v
+
+      - name: Análisis SonarQube
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
 
   deploy:
