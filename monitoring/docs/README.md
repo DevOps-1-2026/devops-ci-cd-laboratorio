@@ -20,6 +20,7 @@
 2. [Arquitectura de Monitoreo y Observabilidad](#2-arquitectura-de-monitoreo-y-observabilidad)
 3. [Instrumentación de la Aplicación FastAPI](#3-instrumentación-de-la-aplicación-fastapi)
 4. [Stack Local y Aprovisionamiento Automático](#4-stack-local-y-aprovisionamiento-automático)
+   - [Ejecución local del stack](#41-ejecución-local-del-stack)
 5. [Monitoreo en Producción (Azure Container Apps)](#5-monitoreo-en-producción-azure-container-apps)
 6. [Pruebas de Carga y Validación de SLOs (k6)](#6-pruebas-de-carga-y-validación-de-slos-k6)
 7. [Reglas de Alerta Automatizadas (Grafana Alerting)](#7-reglas-de-alerta-automatizadas-grafana-alerting)
@@ -85,6 +86,76 @@ La infraestructura de observabilidad está contenida en `docker-compose.yml` e i
 
 > [!TIP]
 > **Aprovisionamiento Automático:** Se eliminó cualquier dependencia de IDs aleatorios de datasource en el dashboard JSON mediante el parámetro explícito `uid: prometheus`, permitiendo que el tablero cargue métricas de forma inmediata al iniciar los contenedores.
+
+### 4.1. Ejecución local del stack
+
+#### Prerrequisitos
+
+- Docker Desktop instalado y en ejecución.
+- Docker Compose v2, disponible mediante el comando `docker compose`.
+- Puertos locales `3000` y `9090` disponibles.
+- Conexión a internet para descargar las imágenes y consultar la aplicación en Azure.
+- Endpoint `/metrics` de FastAPI accesible desde la URL definida en `monitoring/prometheus/prometheus.yml`.
+
+> [!IMPORTANT]
+> Prometheus, Grafana y k6 se ejecutan localmente en Docker Desktop. La aplicación monitoreada es la que está desplegada en Azure Container Apps; las herramientas de observabilidad no están alojadas en Azure.
+
+Desde la raíz del repositorio, iniciar Prometheus y Grafana:
+
+```powershell
+docker compose up -d prometheus grafana
+```
+
+Comprobar que ambos servicios estén en ejecución:
+
+```powershell
+docker compose ps
+```
+
+Acceder a las interfaces:
+
+- Prometheus: [http://localhost:9090](http://localhost:9090)
+- Grafana: [http://localhost:3000](http://localhost:3000)
+- Credenciales iniciales de Grafana: usuario `admin`, contraseña `admin`. Grafana solicita cambiar la contraseña durante el primer ingreso.
+
+Validar en [http://localhost:9090/targets](http://localhost:9090/targets) que el target `fastapi-app` aparezca en estado `UP`. También se puede comprobar directamente el endpoint configurado:
+
+```powershell
+curl.exe https://app-cicdfundev.nicebush-06dcb993.brazilsouth.azurecontainerapps.io/metrics
+```
+
+Ejecutar la prueba de carga k6:
+
+```powershell
+docker compose run --rm k6
+```
+
+Consultar registros si algún servicio no inicia o no recibe datos:
+
+```powershell
+docker compose logs prometheus
+docker compose logs grafana
+```
+
+Detener los servicios sin eliminar los contenedores:
+
+```powershell
+docker compose stop prometheus grafana
+```
+
+Detener y eliminar los contenedores del stack:
+
+```powershell
+docker compose down
+```
+
+#### Consideraciones
+
+- Si los puertos `3000` o `9090` están ocupados, Docker Compose no podrá publicar el servicio correspondiente.
+- Si cambia la URL de Azure Container Apps, debe actualizarse el target de `monitoring/prometheus/prometheus.yml` y reiniciarse Prometheus.
+- La configuración, el dashboard y las alertas se vuelven a aprovisionar desde el repositorio al iniciar Grafana.
+- El `docker-compose.yml` actual no configura volúmenes persistentes para la base de datos de Grafana ni para las series históricas de Prometheus. Al ejecutar `docker compose down`, esos datos locales pueden perderse.
+- No deben almacenarse contraseñas, tokens de Azure ni otros secretos dentro del repositorio.
 
 ---
 
