@@ -182,7 +182,7 @@ Se ha implementado e integrado un stack completo de observabilidad y pruebas de 
 * **Pruebas de Carga (k6):** Ejecución de curva de tráfico sintética (hasta 30 usuarios virtuales) validando cumplimiento de SLOs ($p_{95}<500\text{ ms}$, $p_{99}<1000\text{ ms}$, tasa de fallos $<1\%$, disponibilidad $>99\%$).
 
 > **Guía y Evidencias Completas de Monitoreo:**  
-> Proceso detallado, arquitectura del stack y capturas de pantalla de evidencia en la carpeta [`/monitoring/docs`](./monitoring/docs/README.md).
+> Prerrequisitos, comandos de ejecución local, validaciones, arquitectura y evidencias en [`/monitoring/docs`](./monitoring/docs/README.md).
 
 ---
 
