@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - develop
+      - main
 
   pull_request:
     branches:
       - develop
+      - main
 
 permissions:
   id-token: write
@@ -15,6 +17,9 @@ permissions:
 
 jobs:
 
+  # ============================================================
+  # BUILD & TEST
+  # ============================================================
   test:
     name: Build and Test
     runs-on: ubuntu-latest
@@ -41,16 +46,66 @@ jobs:
         run: |
           PYTHONPATH=. pytest -v
 
-      - name: Análisis SonarQube
+
+  # ============================================================
+  # SONARCLOUD
+  #
+  # Solo se ejecuta:
+  # 1. Cuando hay push a main
+  # 2. Cuando hay Pull Request cuyo destino es main
+  #
+  # Esto evita intentar analizar develop como una rama
+  # independiente en el plan Free de SonarCloud.
+  # ============================================================
+  sonar:
+    name: Análisis SonarCloud
+    needs: test
+    runs-on: ubuntu-latest
+
+    if: >
+      (github.event_name == 'push' &&
+       github.ref == 'refs/heads/main')
+      ||
+      (github.event_name == 'pull_request' &&
+       github.base_ref == 'main')
+
+    steps:
+
+      - name: Checkout código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Análisis SonarCloud
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
 
 
+  # ============================================================
+  # DEPLOY AZURE CONTAINER APP
+  #
+  # Solo se ejecuta cuando hay PUSH directo a develop.
+  # ============================================================
   deploy:
     name: Build and Deploy
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+
+    if: >
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/develop'
+
     runs-on: ubuntu-latest
 
     steps:
