@@ -24,6 +24,7 @@ spec:
       containers:
         - name: devops-app
           image: acrfundev.azurecr.io/app-cicdfundev:9b463191b54a02b1df88a17e0568ece1da315a77
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
           readinessProbe:
