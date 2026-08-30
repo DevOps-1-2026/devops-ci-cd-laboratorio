@@ -1,0 +1,26 @@
+$baseUrl = "https://app-cicdfundev.nicebush-06dcb993.brazilsouth.azurecontainerapps.io"
+
+# Health Check
+Write-Host "1. Verificando Health Check..." -ForegroundColor Cyan
+Invoke-RestMethod -Uri "$baseUrl/health" -Method Get | ConvertTo-Json
+
+# Crear solicitud
+Write-Host "`n2. Creando solicitud de crédito..." -ForegroundColor Cyan
+$body = @{
+    customer_name = "Carlos Pérez"
+    document_number = "1098765432"
+    requested_amount = 25000000
+} | ConvertTo-Json
+
+$app = Invoke-RestMethod -Uri "$baseUrl/credit-applications" -Method Post -Body $body -ContentType "application/json"
+$app | ConvertTo-Json
+$appId = $app.application_id
+
+# Consultar por ID
+Write-Host "`n3. Consultando solicitud por ID ($appId)..." -ForegroundColor Cyan
+Invoke-RestMethod -Uri "$baseUrl/credit-applications/$appId" -Method Get | ConvertTo-Json
+
+# Actualizar Estado
+Write-Host "`n4. Aprobando solicitud..." -ForegroundColor Cyan
+$updateBody = @{ status = "APPROVED" } | ConvertTo-Json
+Invoke-RestMethod -Uri "$baseUrl/credit-applications/$appId/status" -Method Put -Body $updateBody -ContentType "application/json" | ConvertTo-Json

@@ -39,12 +39,13 @@ jobs:
 
       - name: Ejecutar pruebas
         run: |
-          pytest -v
+          PYTHONPATH=. pytest -v
 
 
   # ============================================================
   # SONARCLOUD
-  # Solo se ejecuta cuando el código llega a main
+  #
+  # Se ejecuta únicamente cuando el código llega a main.
   # ============================================================
   sonar:
     name: Análisis SonarCloud
@@ -52,7 +53,7 @@ jobs:
 
     if: >
       github.event_name == 'push' &&
-      github.ref == 'refs/heads/main'
+      (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
 
     runs-on: ubuntu-latest
 
@@ -73,25 +74,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # ----------------------------------------------------------
-      # PRUEBA TEMPORAL DEL TOKEN
-      # No muestra el token
-      # ----------------------------------------------------------
-      - name: Verificar SONAR_TOKEN
-        shell: bash
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          if [ -z "${SONAR_TOKEN}" ]; then
-            echo "❌ SONAR_TOKEN NO está disponible"
-            exit 1
-          else
-            echo "✅ SONAR_TOKEN está disponible"
-          fi
-
-      # ----------------------------------------------------------
-      # SONARCLOUD
-      # ----------------------------------------------------------
       - name: Análisis SonarCloud
         uses: SonarSource/sonarqube-scan-action@v6
         env:
@@ -100,8 +82,9 @@ jobs:
 
 
   # ============================================================
-  # BUILD & DEPLOY
-  # Solo se ejecuta en main después de SonarCloud
+  # DEPLOY AZURE CONTAINER APP
+  #
+  # Solo se ejecuta cuando hay PUSH a develop.
   # ============================================================
   deploy:
     name: Build and Deploy
@@ -109,7 +92,7 @@ jobs:
 
     if: >
       github.event_name == 'push' &&
-      github.ref == 'refs/heads/main'
+      github.ref == 'refs/heads/develop'
 
     runs-on: ubuntu-latest
 
@@ -118,30 +101,19 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      # ----------------------------------------------------------
-      # LOGIN AZURE
-      # ----------------------------------------------------------
-      - name: Login Azure
+      - name: Azure Login
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.APPCICDFUNDEV_AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.APPCICDFUNDEV_AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.APPCICDFUNDEV_AZURE_SUBSCRIPTION_ID }}
 
-      # ----------------------------------------------------------
-      # DEPLOY AZURE CONTAINER APPS
-      # ----------------------------------------------------------
-      - name: Build and Deploy
+      - name: Build and deploy Container App
         uses: azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ${{ github.workspace }}
           acrName: acrfundev
           containerAppName: app-cicdfundev
-          resourceGroup: rg-cicdfundev
+          resourceGroup: rg-cicddevopsfun
           imageToBuild: acrfundev.azurecr.io/app-cicdfundev:${{ github.sha }}
-
-      # ----------------------------------------------------------
-      # LOGOUT AZURE
-      # ----------------------------------------------------------
-      - name: Logout Azure
-        run: az logout
+          

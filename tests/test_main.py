@@ -29,6 +29,15 @@ def test_health():
     assert response.json() == {"status": "ok"}
 
 
+def test_metrics():
+    # Make a dummy request to generate HTTP metrics
+    client.get("/health")
+    response = client.get("/metrics")
+    assert response.status_code == 200
+    assert "http_requests_total" in response.text or "http_request_duration_seconds" in response.text
+    assert "process_cpu_seconds_total" in response.text or "process_resident_memory_bytes" in response.text
+
+
 def test_create_application_starts_pending():
     response = create_sample_application()
     assert response.status_code == 201
