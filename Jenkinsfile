@@ -13,7 +13,7 @@ pipeline {
     }
 
     options {
-        timeout(time: 10, unit: 'MINUTES')
+        timeout(time: 15, unit: 'MINUTES')
         disableConcurrentBuilds()
     }
 
@@ -50,6 +50,29 @@ pipeline {
             }
         }
 
+        stage('Esperar imagen en ACR') {
+            steps {
+                powershell '''
+                    $ErrorActionPreference = 'Stop'
+                    $maxAttempts = 30
+
+                    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+                        & docker manifest inspect $env:DEPLOY_IMAGE *> $null
+
+                        if ($LASTEXITCODE -eq 0) {
+                            Write-Host "Imagen disponible en ACR: $env:DEPLOY_IMAGE"
+                            exit 0
+                        }
+
+                        Write-Host "Imagen aun no disponible. Intento $attempt de $maxAttempts."
+                        Start-Sleep -Seconds 10
+                    }
+
+                    throw "La imagen $env:DEPLOY_IMAGE no aparecio en ACR dentro del tiempo esperado."
+                '''
+            }
+        }
+
         stage('Desplegar') {
             steps {
                 powershell '''
@@ -62,9 +85,17 @@ pipeline {
                     }
 
                     Invoke-KubectlCommand apply -f k8s/namespace.yaml
-                    Invoke-KubectlCommand apply -f k8s/deployment.yaml
                     Invoke-KubectlCommand apply -f k8s/service.yaml
-                    Invoke-KubectlCommand set image deployment/$env:DEPLOYMENT_NAME devops-app=$env:DEPLOY_IMAGE --namespace $env:KUBE_NAMESPACE
+
+                    $deploymentManifest = & kubectl set image -f k8s/deployment.yaml devops-app=$env:DEPLOY_IMAGE --local -o yaml
+                    if ($LASTEXITCODE -ne 0) {
+                        throw "No fue posible preparar el Deployment con la imagen $env:DEPLOY_IMAGE"
+                    }
+
+                    $deploymentManifest | & kubectl apply -f -
+                    if ($LASTEXITCODE -ne 0) {
+                        throw "No fue posible aplicar el Deployment"
+                    }
                 '''
             }
         }
