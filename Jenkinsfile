@@ -57,7 +57,7 @@ pipeline {
                     $maxAttempts = 30
 
                     for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
-                        & docker manifest inspect $env:DEPLOY_IMAGE *> $null
+                        & cmd.exe /c "docker manifest inspect $env:DEPLOY_IMAGE >nul 2>&1"
 
                         if ($LASTEXITCODE -eq 0) {
                             Write-Host "Imagen disponible en ACR: $env:DEPLOY_IMAGE"
