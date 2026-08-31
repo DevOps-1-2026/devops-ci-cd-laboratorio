@@ -6,6 +6,11 @@ on:
       - develop
       - main
 
+  pull_request:
+    branches:
+      - develop
+      - main
+
 permissions:
   id-token: write
   contents: read
@@ -44,8 +49,6 @@ jobs:
 
   # ============================================================
   # SONARCLOUD
-  #
-  # Se ejecuta únicamente cuando el código llega a main.
   # ============================================================
   sonar:
     name: Análisis SonarCloud
@@ -53,7 +56,8 @@ jobs:
 
     if: >
       github.event_name == 'push' &&
-      (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+      (github.ref == 'refs/heads/develop' ||
+       github.ref == 'refs/heads/main')
 
     runs-on: ubuntu-latest
 
@@ -83,8 +87,6 @@ jobs:
 
   # ============================================================
   # DEPLOY AZURE CONTAINER APP
-  #
-  # Solo se ejecuta cuando hay PUSH a develop.
   # ============================================================
   deploy:
     name: Build and Deploy
@@ -116,4 +118,3 @@ jobs:
           containerAppName: app-cicdfundev
           resourceGroup: rg-cicddevopsfun
           imageToBuild: acrfundev.azurecr.io/app-cicdfundev:${{ github.sha }}
-          
