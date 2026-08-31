@@ -29,7 +29,8 @@
 7. [Pruebas Directas en Producción](#7-pruebas-directas-en-producción)
 8. [Monitoreo, Observabilidad y Pruebas de Carga (k6 & Grafana)](#8-monitoreo-observabilidad-y-pruebas-de-carga-k6--grafana)
 9. [CD con Jenkins y Kubernetes local](#9-cd-con-jenkins-y-kubernetes-local)
-10. [Autores](#10-autores)
+10. [Implementación SonarQube y Snyk](#10-Implementación-SonarQube-y-Snyk)
+11. [Autores](#11-autores)
 
 ---
 
@@ -220,7 +221,7 @@ El despliegue de Kubernetes se ejecuta localmente con Docker Desktop y el contex
   <i>Figura 6: Validación funcional mediante port-forward al Service y respuesta HTTP 200 del endpoint /health.</i>
 </p>
 
-## 11 SonarQube y Snyk
+## 10 Implementación SonarQube y Snyk
 
 Se integró SonarQube Cloud al workflow de GitHub Actions para realizar un análisis automático del código Python.
 
@@ -277,6 +278,8 @@ Entre los problemas identificados se encontraron vulnerabilidades asociadas prin
 <img width="922" height="470" alt="image" src="https://github.com/user-attachments/assets/5e4139f8-cf44-471e-86a5-368c53db1a7a" />
  <br>
 </p>
+
+
 | Vulnerabilidad                                               | Severidad        |
 | ------------------------------------------------------------ | ---------------- |
 | Regular Expression Denial of Service (ReDoS)                 | **Alta**         |
@@ -300,7 +303,7 @@ Integración con consola de Snyk
 </p>
 ---
 
-## 13. Autores 
+## 11. Autores 
 
 - Camilo Jose Mora Rodriguez
 - Danny Tatiana Morales Jimenez
