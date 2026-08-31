@@ -49,6 +49,8 @@ jobs:
 
   # ============================================================
   # SONARCLOUD
+  #
+  # Se ejecuta únicamente mediante PUSH a develop o main.
   # ============================================================
   sonar:
     name: Análisis SonarCloud
@@ -56,8 +58,10 @@ jobs:
 
     if: >
       github.event_name == 'push' &&
-      (github.ref == 'refs/heads/develop' ||
-       github.ref == 'refs/heads/main')
+      (
+        github.ref == 'refs/heads/develop' ||
+        github.ref == 'refs/heads/main'
+      )
 
     runs-on: ubuntu-latest
 
@@ -78,15 +82,42 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # ----------------------------------------------------------
+      # Validar que GitHub está entregando el secreto
+      # ----------------------------------------------------------
+      - name: Verificar SONAR_TOKEN
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "ERROR: SONAR_TOKEN no está disponible."
+            echo "Verifica Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+          echo "SONAR_TOKEN está disponible correctamente."
+
+      # ----------------------------------------------------------
+      # Análisis SonarCloud
+      # ----------------------------------------------------------
       - name: Análisis SonarCloud
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
+        with:
+          args: >
+            -Dsonar.projectKey=camilomora90_devops-ci-cd-laboratorio
+            -Dsonar.organization=camilomora90
 
 
   # ============================================================
   # DEPLOY AZURE CONTAINER APP
+  #
+  # Solo se ejecuta cuando hay PUSH a develop.
+  #
+  # Dependencias:
+  #   test -> sonar -> deploy
   # ============================================================
   deploy:
     name: Build and Deploy
@@ -103,6 +134,9 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
+      # ----------------------------------------------------------
+      # Login Azure
+      # ----------------------------------------------------------
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -110,6 +144,9 @@ jobs:
           tenant-id: ${{ secrets.APPCICDFUNDEV_AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.APPCICDFUNDEV_AZURE_SUBSCRIPTION_ID }}
 
+      # ----------------------------------------------------------
+      # Build y Deploy
+      # ----------------------------------------------------------
       - name: Build and deploy Container App
         uses: azure/container-apps-deploy-action@v2
         with:
