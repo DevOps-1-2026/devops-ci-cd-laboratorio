@@ -220,9 +220,75 @@ El despliegue de Kubernetes se ejecuta localmente con Docker Desktop y el contex
   <i>Figura 6: Validación funcional mediante port-forward al Service y respuesta HTTP 200 del endpoint /health.</i>
 </p>
 
+## 11 SonarQube y Snyk
+
+Se integró SonarQube Cloud al workflow de GitHub Actions para realizar un análisis automático del código Python.
+
+El análisis se ejecuta después de las pruebas unitarias y utiliza un token almacenado como secreto de GitHub (SONAR_TOKEN), evitando exponer credenciales dentro del código fuente. La configuración del proyecto se realiza mediante sonar-project.properties.
+
+Push a develop/main
+        │
+        ▼
+   Build & Test
+        │
+        ▼
+   SonarQube Cloud
+        │
+        ▼
+ Análisis de calidad
+SonarQube permite revisar métricas como:
+
+Seguridad
+Fiabilidad
+Mantenibilidad
+Cobertura
+Duplicación de código
+Issues detectados
+
+En el código fuente se configuró el proyecto para que GitHub Actions ejecute el análisis de SonarQube sobre cada push realizado a las ramas configuradas.
+Evidencia – Configuración del análisis en el repositorio:
+
+<img width="935" height="232" alt="image" src="https://github.com/user-attachments/assets/413918ec-d9f6-4b1a-b8e0-efef14dc2b33" />
+
+Una vez ejecutado correctamente el pipeline, los resultados son enviados a SonarQube Cloud, donde se pueden consultar métricas relacionadas con la calidad y seguridad del proyecto, como Security, Reliability, Maintainability, Coverage y Duplications.
+
+Evidencia – Resultado del análisis en SonarQube Cloud:
+
+<img width="950" height="467" alt="image" src="https://github.com/user-attachments/assets/4cdbd95f-8317-410f-85cf-47c09a44427b" />
+
+Synk
+
+Se integró Snyk al pipeline de GitHub Actions como herramienta complementaria a SonarQube Cloud, con el objetivo de identificar vulnerabilidades conocidas en las dependencias utilizadas por la aplicación Python.
+La ejecución se configuró mediante un job independiente dentro del workflow de CI/CD y analiza las dependencias definidas en requirements.txt
+
+Se realizo la integración con losparametros anteriores y la asociación del repositio lo que nos permitio ejecutar el analisis de manera adecuada con los siguientes resultados:
+
+El análisis de las dependencias identificó:
+
+24 dependencias analizadas
+8 vulnerabilidades/Issues encontrados
+16 rutas vulnerables
+
+Entre los problemas identificados se encontraron vulnerabilidades asociadas principalmente a la versión utilizada de Starlette (0.38.6), dependencia utilizada por FastAPI.
+
+<img width="950" height="424" alt="image" src="https://github.com/user-attachments/assets/50f4209c-b30f-4d81-8a0b-67dd1555cf3b" />
+
+<img width="922" height="470" alt="image" src="https://github.com/user-attachments/assets/5e4139f8-cf44-471e-86a5-368c53db1a7a" />
+
+| Vulnerabilidad                                               | Severidad        |
+| ------------------------------------------------------------ | ---------------- |
+| Regular Expression Denial of Service (ReDoS)                 | **Alta**         |
+| Server-Side Request Forgery (SSRF)                           | **Alta**         |
+| Use of Incorrectly-Resolved Name or Reference                | **Alta**         |
+| Allocation of Resources Without Limits or Throttling         | **Alta / Media** |
+| Use of Externally-Controlled Input to Select Classes or Code | **Media**        |
+| HTTP Request Smuggling                                       | **Media**        |
+
+De esta manera, SonarQube y Snyk cumplen funciones complementarias: SonarQube permite evaluar aspectos de calidad, mantenibilidad y seguridad del código, mientras que Snyk permite identificar vulnerabilidades conocidas en las dependencias utilizadas por la aplicación.
+
 ---
 
-## 10. Autores 
+## 13. Autores 
 
 - Camilo Jose Mora Rodriguez
 - Danny Tatiana Morales Jimenez
