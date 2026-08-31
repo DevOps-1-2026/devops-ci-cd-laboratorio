@@ -50,16 +50,24 @@ jobs:
   # ============================================================
   # SONARCLOUD
   #
-  # Se ejecuta únicamente cuando el código llega a main.
+  # Se ejecuta en:
+  # - PUSH a develop
+  # - PUSH a main
+  # - PULL REQUEST hacia develop
+  # - PULL REQUEST hacia main
   # ============================================================
   sonar:
     name: Análisis SonarCloud
     needs: test
 
     if: >
-     github.event_name == 'push' &&
-     (github.ref == 'refs/heads/develop' ||
-      github.ref == 'refs/heads/main')
+      (github.event_name == 'push' &&
+       (github.ref == 'refs/heads/develop' ||
+        github.ref == 'refs/heads/main'))
+      ||
+      (github.event_name == 'pull_request' &&
+       (github.base_ref == 'develop' ||
+        github.base_ref == 'main'))
 
     runs-on: ubuntu-latest
 
@@ -80,21 +88,40 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # --------------------------------------------------------
+      # VALIDAR QUE GITHUB ESTÁ ENTREGANDO EL SECRET
+      # --------------------------------------------------------
+      - name: Verificar SONAR_TOKEN
+        shell: bash
+        run: |
+          if [ -z "${{ secrets.SONAR_TOKEN }}" ]; then
+            echo "ERROR: SONAR_TOKEN no está disponible."
+            echo "Verifica Settings > Secrets and variables > Actions."
+            exit 1
+          else
+            echo "OK: SONAR_TOKEN está disponible."
+          fi
+
+      # --------------------------------------------------------
+      # ANÁLISIS SONARCLOUD
+      # --------------------------------------------------------
       - name: Análisis SonarCloud
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
         with:
-         args: >
-          -Dsonar.projectKey=camilomora90_devops-ci-cd-laboratorio
-          -Dsonar.organization=camilomora90
+          args: >
+            -Dsonar.projectKey=camilomora90_devops-ci-cd-laboratorio
+            -Dsonar.organization=camilomora90
 
 
   # ============================================================
   # DEPLOY AZURE CONTAINER APP
   #
-  # Solo se ejecuta cuando hay PUSH a develop.
+  # SOLO se ejecuta cuando hay PUSH a develop.
+  # Los Pull Request NO hacen deploy.
+  # main NO hace deploy.
   # ============================================================
   deploy:
     name: Build and Deploy
@@ -111,6 +138,9 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
+      # --------------------------------------------------------
+      # LOGIN AZURE
+      # --------------------------------------------------------
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -118,6 +148,9 @@ jobs:
           tenant-id: ${{ secrets.APPCICDFUNDEV_AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.APPCICDFUNDEV_AZURE_SUBSCRIPTION_ID }}
 
+      # --------------------------------------------------------
+      # BUILD & DEPLOY CONTAINER APP
+      # --------------------------------------------------------
       - name: Build and deploy Container App
         uses: azure/container-apps-deploy-action@v2
         with:
