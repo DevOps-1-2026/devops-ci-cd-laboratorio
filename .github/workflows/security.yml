@@ -1,4 +1,4 @@
-name: Security - Snyk
+name: Snyk Security Scan
 
 on:
   push:
@@ -35,9 +35,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Ejecutar Snyk
+      # ==========================================
+      # VALIDACIÓN DE VULNERABILIDADES
+      # ==========================================
+      - name: Snyk Test
         uses: snyk/actions/python@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: test
+
+      # ==========================================
+      # MONITOREO EN SNYK
+      # ==========================================
+      - name: Snyk Monitor
+        uses: snyk/actions/python@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
