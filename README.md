@@ -226,4 +226,4 @@ El despliegue de Kubernetes se ejecuta localmente con Docker Desktop y el contex
 
 - Camilo Jose Mora Rodriguez
 - Danny Tatiana Morales Jimenez
-- Juan Daniel Valderrama Pérez
+- Juan Daniel Valderrama Pérez 
