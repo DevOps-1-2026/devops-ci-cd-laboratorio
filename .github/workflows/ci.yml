@@ -6,6 +6,11 @@ on:
       - develop
       - main
 
+  pull_request:
+    branches:
+      - develop
+      - main
+
 permissions:
   id-token: write
   contents: read
@@ -79,6 +84,10 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
+        with:
+         args: >
+          -Dsonar.projectKey=camilomora90_devops-ci-cd-laboratorio
+          -Dsonar.organization=camilomora90
 
 
   # ============================================================
