@@ -270,11 +270,13 @@ El análisis de las dependencias identificó:
 16 rutas vulnerables
 
 Entre los problemas identificados se encontraron vulnerabilidades asociadas principalmente a la versión utilizada de Starlette (0.38.6), dependencia utilizada por FastAPI.
-
+<p align="center">
 <img width="950" height="424" alt="image" src="https://github.com/user-attachments/assets/50f4209c-b30f-4d81-8a0b-67dd1555cf3b" />
+ <br>
 
 <img width="922" height="470" alt="image" src="https://github.com/user-attachments/assets/5e4139f8-cf44-471e-86a5-368c53db1a7a" />
-
+ <br>
+</p>
 | Vulnerabilidad                                               | Severidad        |
 | ------------------------------------------------------------ | ---------------- |
 | Regular Expression Denial of Service (ReDoS)                 | **Alta**         |
@@ -286,6 +288,16 @@ Entre los problemas identificados se encontraron vulnerabilidades asociadas prin
 
 De esta manera, SonarQube y Snyk cumplen funciones complementarias: SonarQube permite evaluar aspectos de calidad, mantenibilidad y seguridad del código, mientras que Snyk permite identificar vulnerabilidades conocidas en las dependencias utilizadas por la aplicación.
 
+
+Una vez se analizan esta vulnerabilidades se procede a su correcion pormedio de actualaicion de componentes en las difernetes librerias en requerimentas.txt
+<p align="center">
+<img width="949" height="408" alt="image" src="https://github.com/user-attachments/assets/b105d8bd-3c90-474a-b891-8378ce4f9852" />
+ <br>
+
+<img width="951" height="472" alt="image" src="https://github.com/user-attachments/assets/c1a05ea1-9e23-45e2-98a5-23220039ee21" />
+Integración con consola de Snyk
+ <br>
+</p>
 ---
 
 ## 13. Autores 
